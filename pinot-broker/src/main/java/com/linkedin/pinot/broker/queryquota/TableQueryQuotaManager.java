@@ -192,20 +192,18 @@ public class TableQueryQuotaManager {
    * @param tableName original table name which could be raw.
    * @return true if there is no query quota specified for the table or a token can be acquired, otherwise return false.
    * */
-  public boolean acquire(String tableName, String offlineTableName, String realtimeTableName) {
-    LOGGER.info("Trying to acquire token for table: {}", tableName);
+  public boolean acquire(String tableName) {
+    LOGGER.debug("Trying to acquire token for table: {}", tableName);
 
-    QueryQuotaConfig offlineTableQueryQuotaConfig = null;
-    QueryQuotaConfig realtimeTableQueryQuotaConfig = null;
-    if (offlineTableName != null) {
-      offlineTableQueryQuotaConfig = _rateLimiterMap.get(offlineTableName);
-    }
-    if (realtimeTableName != null) {
-      realtimeTableQueryQuotaConfig = _rateLimiterMap.get(realtimeTableName);
-    }
+    final String rawTableName = TableNameBuilder.extractRawTableName(tableName);
+    String offlineTableName = TableNameBuilder.OFFLINE.tableNameWithType(rawTableName);
+    String realtimeTableName = TableNameBuilder.REALTIME.tableNameWithType(rawTableName);
+
+    QueryQuotaConfig offlineTableQueryQuotaConfig = _rateLimiterMap.get(offlineTableName);
+    QueryQuotaConfig realtimeTableQueryQuotaConfig = _rateLimiterMap.get(realtimeTableName);
 
     if (offlineTableQueryQuotaConfig == null && realtimeTableQueryQuotaConfig == null) {
-      LOGGER.info("No qps quota is specified for table: {}", tableName);
+      LOGGER.debug("No qps quota is specified for table: {}", tableName);
       return true;
     }
 
@@ -231,7 +229,7 @@ public class TableQueryQuotaManager {
     RateLimiter rateLimiter = queryQuotaConfig.getRateLimiter();
     double perBrokerRate = rateLimiter.getRate();
     if (!rateLimiter.tryAcquire()) {
-      LOGGER.error("Quota is exceeded for table: {}. Per-broker rate: {}", tableName, perBrokerRate);
+      LOGGER.info("Quota is exceeded for table: {}. Per-broker rate: {}", tableName, perBrokerRate);
       return false;
     }
 
@@ -239,7 +237,7 @@ public class TableQueryQuotaManager {
     if (_brokerMetrics != null) {
       int numHits = queryQuotaConfig.getHitCounter().getHitCount();
       int percentageOfCapacityUtilization = (int)(numHits * 100 / perBrokerRate);
-      LOGGER.info("The percentage of rate limit capacity utilization is {}", percentageOfCapacityUtilization);
+      LOGGER.debug("The percentage of rate limit capacity utilization is {}", percentageOfCapacityUtilization);
       _brokerMetrics.addMeteredTableValue(tableName, BrokerMeter.QUERY_QUOTA_CAPACITY_UTILIZATION_RATE, percentageOfCapacityUtilization);
     }
 

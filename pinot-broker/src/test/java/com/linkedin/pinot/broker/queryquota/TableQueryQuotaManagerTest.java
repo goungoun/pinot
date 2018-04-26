@@ -208,7 +208,7 @@ public class TableQueryQuotaManagerTest {
     Assert.assertEquals(_tableQueryQuotaManager.getRateLimiterMapSize(), 2);
 
     for (int i = 0; i < 70; i++) {
-      Assert.assertTrue(_tableQueryQuotaManager.acquire(RAW_TABLE_NAME, OFFLINE_TABLE_NAME, REALTIME_TABLE_NAME));
+      Assert.assertTrue(_tableQueryQuotaManager.acquire(RAW_TABLE_NAME));
       // Rate limiter generates 1 token every 10 milliseconds, have to make it sleep for a while.
       Thread.sleep(10);
     }
