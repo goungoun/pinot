@@ -17,6 +17,7 @@ package com.linkedin.pinot.controller;
 
 import com.linkedin.pinot.common.protocols.SegmentCompletionProtocol;
 import com.linkedin.pinot.common.utils.StringUtil;
+import com.linkedin.pinot.controller.api.storage.PinotStorageType;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -56,6 +57,12 @@ public class ControllerConf extends PropertiesConfiguration {
   // protection is enabled. If the upload does not finish within the timeout, next upload can override the previous one.
   private static final String SEGMENT_UPLOAD_TIMEOUT_IN_MILLIS = "controller.segment.upload.timeoutInMillis";
 
+  // Storage Parameters
+  private static final String PINOT_STORAGE_DIR = "pinot.storage.dir";
+  private static final String PINOT_STORAGE_TYPE = "pinot.storage.type";
+  private static final String PINOT_ENABLE_RETENTION = "pinot.enable.retention";
+  private static final String PINOT_ENABLE_SAFE_UPLOAD = "pinot.enable.safe.upload";
+
   private static final int DEFAULT_RETENTION_CONTROLLER_FREQUENCY_IN_SECONDS = 6 * 60 * 60; // 6 Hours.
   private static final int DEFAULT_VALIDATION_CONTROLLER_FREQUENCY_IN_SECONDS = 60 * 60; // 1 Hour.
   private static final int DEFAULT_STATUS_CONTROLLER_FREQUENCY_IN_SECONDS = 5 * 60; // 5 minutes
@@ -72,6 +79,12 @@ public class ControllerConf extends PropertiesConfiguration {
       "com.linkedin.pinot.controller.api.access.AllowAllAccessFactory";
   private static final long DEFAULT_SEGMENT_UPLOAD_TIMEOUT_IN_MILLIS = 600_000L; // 10 minutes
 
+  // Default Storage Parameters
+  private static final String DEFAULT_PINOT_STORAGE_DIR = "/export";
+  private static final String DEFAULT_PINOT_STORAGE_TYPE = PinotStorageType.LOCAL.toString();
+  private static final boolean DEFAULT_PINOT_ENABLE_RETENTION = true;
+  private static final boolean DEFAULT_PINOT_ENABLE_SAFE_UPLOAD = true;
+
   public ControllerConf(File file) throws ConfigurationException {
     super(file);
   }
@@ -87,6 +100,22 @@ public class ControllerConf extends PropertiesConfiguration {
       // Shouldn't happen
       throw new AssertionError("UTF-8 encoding should always be supported", e);
     }
+  }
+
+  public void setPinotStorageDir(String dir) {
+    setProperty(PINOT_STORAGE_DIR, dir);
+  }
+
+  public void setPinotStorageType(PinotStorageType pinotStorageType) {
+    setProperty(PINOT_STORAGE_TYPE, pinotStorageType.toString());
+  }
+
+  public void setPinotEnableRetention(boolean enableRetention) {
+    setProperty(PINOT_ENABLE_RETENTION, enableRetention);
+  }
+
+  public void setPinotEnableSafeUpload(boolean enableSafeUpload) {
+    setProperty(PINOT_ENABLE_SAFE_UPLOAD, enableSafeUpload);
   }
 
   public void setSplitCommit(boolean isSplitCommit) {
@@ -207,6 +236,22 @@ public class ControllerConf extends PropertiesConfiguration {
   @Override
   public String toString() {
     return super.toString();
+  }
+
+  public String getPinotStorageDir() {
+    return getString(PINOT_STORAGE_DIR, DEFAULT_PINOT_STORAGE_DIR);
+  }
+
+  public String getPinotStorageType() {
+    return getString(PINOT_STORAGE_TYPE, DEFAULT_PINOT_STORAGE_TYPE);
+  }
+
+  public boolean getPinotEnableRetention() {
+    return getBoolean(PINOT_ENABLE_RETENTION, DEFAULT_PINOT_ENABLE_RETENTION);
+  }
+
+  public boolean getPinotEnableSafeUpload() {
+    return getBoolean(PINOT_ENABLE_SAFE_UPLOAD, DEFAULT_PINOT_ENABLE_SAFE_UPLOAD);
   }
 
   public boolean getAcceptSplitCommit() {
